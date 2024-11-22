@@ -1,0 +1,191 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Weather App</title>
+    <style>
+        /* Layout Styling */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-image: url('images/weather.jpg');
+            background-size: cover;
+            background-position: center;
+            color: white;
+        }
+
+        #layout {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            width: 80%;
+            max-width: 600px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: #f39c12;
+        }
+
+        input {
+            padding: 10px;
+            width: 70%;
+            font-size: 18px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 10px 15px;
+            font-size: 18px;
+            background-color: #3498db;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+            transform: scale(1.05);
+        }
+
+        #result {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        #icon img {
+            width: 100px;
+            height: 100px;
+            margin-top: 20px;
+        }
+
+        .loading {
+            font-size: 18px;
+            color: yellow;
+        }
+
+        .additional-info {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+
+        .info-item {
+            margin: 5px 0;
+        }
+
+        /* Media Queries for Responsiveness */
+        @media (max-width: 768px) {
+            input, button {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+
+        input:focus {
+            background-color:red;
+        }
+    </style>
+</head>
+<body>
+    <div id="layout">
+        <h1>Weather App</h1>
+
+        <label for="cityName">City Name: </label>
+        <input type="text" id="cityName" placeholder="Enter city name">
+        <button onclick="getWeather()">Submit</button>
+
+        <div class="loading" id="loading" style="display: none;">Loading...</div>
+
+        <div id="result"></div>
+        <div id="icon"></div>
+
+        <div id="additional-info" class="additional-info"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        function getWeather() {
+            const city = document.querySelector("#cityName").value;
+            const API_key = "36d5fb6cf784960615162510adab7d52";
+
+            const resultDiv = document.querySelector("#result");
+            const iconDiv = document.querySelector("#icon");
+            const additionalInfoDiv = document.querySelector("#additional-info");
+            const loadingDiv = document.querySelector("#loading");
+
+            // Show loading message
+            loadingDiv.style.display = "block";
+            resultDiv.innerHTML = '';
+            iconDiv.innerHTML = '';
+            additionalInfoDiv.innerHTML = '';
+
+            axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_key}&units=metric`)
+                .then(function(response) {
+                    // Hide loading message
+                    loadingDiv.style.display = "none";
+
+                    const data = response.data;
+                    const weatherIcon = data.weather[0].icon;
+                    const weatherDescription = data.weather[0].description;
+                    const temp = data.main.temp;
+                    const humidity = data.main.humidity;
+                    const windSpeed = data.wind.speed;
+                    const sunrise = new Date(data.sys.sunrise * 1000).toLocaleTimeString();
+                    const sunset = new Date(data.sys.sunset * 1000).toLocaleTimeString();
+
+                    // Display the main weather info
+                    resultDiv.innerHTML = `${city} : ${temp}°C (${weatherDescription})`;
+
+                    // Display the weather icon
+                    iconDiv.innerHTML = `<img src="https://openweathermap.org/img/wn/${weatherIcon}@2x.png" alt="Weather Icon">`;
+
+                    // Weather degree description
+                    let weatherDegreeDescription = "";
+                    if (temp >= 30) {
+                        weatherDegreeDescription = "It's quite hot!";
+                    } else if (temp >= 20) {
+                        weatherDegreeDescription = "It's warm outside.";
+                    } else if (temp >= 10) {
+                        weatherDegreeDescription = "It's a bit cool.";
+                    } else {
+                        weatherDegreeDescription = "It's cold outside.";
+                    }
+
+                    // Display additional weather information
+                    additionalInfoDiv.innerHTML = `
+                        <div class="info-item">Humidity: ${humidity}%</div>
+                        <div class="info-item">Wind Speed: ${windSpeed} m/s</div>
+                        <div class="info-item">Sunrise: ${sunrise}</div>
+                        <div class="info-item">Sunset: ${sunset}</div>
+                        <div class="info-item">${weatherDegreeDescription}</div>
+                    `;
+                })
+                .catch(function(error) {
+                    // Hide loading message
+                    loadingDiv.style.display = "none";
+
+                    // Show error message if the city is not found
+                    resultDiv.innerHTML = "City not found!";
+                    console.log(error.message);
+                });
+        }
+    </script>
+</body>
+</html>
+
